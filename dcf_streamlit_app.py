@@ -2,15 +2,39 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import yfinance as yf
 from dcf_valuation_tool import dcf_model, dcf_sensitivity_analysis, plot_heatmap
 
 st.set_page_config(page_title="DCF Valuation Tool", layout="wide")
-st.title("📊 DCF Valuation Web App")
+st.title("📊 DCF Valuation Web App with Live Ticker Info")
 
-# Upload Excel file
+# Step 1: Get Ticker Info
+st.sidebar.header("Company Info")
+ticker_input = st.sidebar.text_input("Enter Ticker Symbol (e.g., AAPL, MSFT)", value="AAPL")
+
+try:
+    ticker = yf.Ticker(ticker_input)
+    company_info = ticker.info
+    current_price = company_info.get("currentPrice", None)
+    company_name = company_info.get("shortName", "N/A")
+    sector = company_info.get("sector", "N/A")
+    industry = company_info.get("industry", "N/A")
+    country = company_info.get("country", "N/A")
+
+    st.sidebar.markdown(f"**Name:** {company_name}")
+    st.sidebar.markdown(f"**Sector:** {sector}")
+    st.sidebar.markdown(f"**Industry:** {industry}")
+    st.sidebar.markdown(f"**Country:** {country}")
+    st.sidebar.markdown(f"**Current Price:** ${current_price}")
+
+except Exception as e:
+    st.sidebar.error(f"Could not fetch data for '{ticker_input}'. Error: {e}")
+    current_price = None
+
+# Step 2: Upload Excel File
 uploaded_file = st.file_uploader("Upload your financial Excel file", type=["xlsx"])
 
-if uploaded_file:
+if uploaded_file and current_price is not None:
     st.success("File uploaded successfully!")
 
     # Input parameters
@@ -23,9 +47,6 @@ if uploaded_file:
     growth_bear = st.sidebar.slider("Bear Case Growth (%)", 0.0, 10.0, 5.0) / 100
     growth_base = st.sidebar.slider("Base Case Growth (%)", 0.0, 15.0, 10.0) / 100
     growth_bull = st.sidebar.slider("Bull Case Growth (%)", 0.0, 20.0, 15.0) / 100
-
-    # Add current stock price input
-    current_price = st.sidebar.number_input("Current Stock Price ($)", min_value=0.0, value=150.0)
 
     scenario_inputs = {
         "Bear": {"growth": growth_bear, "wacc": wacc},
