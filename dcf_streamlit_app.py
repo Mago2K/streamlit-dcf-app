@@ -8,7 +8,7 @@ from dcf_valuation_tool import dcf_model, dcf_sensitivity_analysis, plot_heatmap
 st.set_page_config(page_title="DCF Valuation Tool", layout="wide")
 st.title("📊 DCF Valuation Web App with Live Ticker Info")
 
-# Step 1: Get Ticker Info
+# Sidebar: Ticker input and company info
 st.sidebar.header("Company Info")
 ticker_input = st.sidebar.text_input("Enter Ticker Symbol (e.g., AAPL, MSFT)", value="AAPL")
 
@@ -31,7 +31,34 @@ except Exception as e:
     st.sidebar.error(f"Could not fetch data for '{ticker_input}'. Error: {e}")
     current_price = None
 
-# Step 2: Upload Excel File
+# Sidebar: Expandable section for sources
+with st.sidebar.expander("ℹ️ Data Sources & Methodology"):
+    st.markdown("""
+    ### 📈 Live Data:
+    - **Current stock price**, company name, sector, industry, and country are retrieved in real-time from [Yahoo Finance](https://finance.yahoo.com) via the `yfinance` Python package.
+
+    ### 📊 Financial Data (Excel Upload):
+    - The Excel file provided by the user should include labeled rows such as:
+        - `Free Cash Flow`
+        - `Cash & Short Term Investments`
+        - `Long Term Debt`
+        - `Shares Outstanding`
+    - These are parsed using fuzzy string matching to allow for minor variations in naming.
+
+    ### 📐 DCF Methodology:
+    - Free Cash Flows are projected for 5 years based on a user-defined growth rate.
+    - A Terminal Value is calculated using:
+        ```
+        Terminal Value = FCF_2026 × (1 + g) / (WACC - g)
+        ```
+    - All future cash flows (including terminal value) are discounted to present value using the user-defined **WACC**.
+    - The sum gives the **Enterprise Value**. Net debt (Debt - Cash) is subtracted to calculate **Equity Value**.
+    - Final **Share Price** = Equity Value / Shares Outstanding
+
+    ℹ️ This app is for educational and illustrative purposes only. Please do your own research.
+    """)
+
+# Main content: Excel file upload
 uploaded_file = st.file_uploader("Upload your financial Excel file", type=["xlsx"])
 
 if uploaded_file and current_price is not None:
