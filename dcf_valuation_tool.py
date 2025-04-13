@@ -3,18 +3,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-def extract_value(df, label):
-    row = df[df.iloc[:, 0].str.contains(label, na=False, case=False)].iloc[0]
-    values = pd.to_numeric(row[1:], errors='coerce')
-    return values.dropna().iloc[0] if not values.dropna().empty else None
-
 def load_financial_data(file_path):
     df = pd.read_excel(file_path, sheet_name="Sheet1")
     df.iloc[:, 0] = df.iloc[:, 0].astype(str).str.strip()
     return df
 
 def extract_value(df, label):
-    row = df[df.iloc[:, 0].str.strip() == label].iloc[0]
+    row = df[df.iloc[:, 0].str.contains(label, na=False, case=False)].iloc[0]
     values = pd.to_numeric(row[1:], errors='coerce')
     return values.dropna().iloc[0] if not values.dropna().empty else None
 
@@ -47,7 +42,7 @@ def calculate_valuation(discounted_fcfs, net_debt, shares_outstanding):
 def dcf_model(file_path, scenario_inputs, terminal_growth=0.025):
     df = load_financial_data(file_path)
     base_fcf = extract_base_fcf(df)
-    cash = extract_value(df, "Cash \u0026 Short Term Investments")
+    cash = extract_value(df, "Cash")
     debt = extract_value(df, "Long Term Debt")
     shares = extract_value(df, "Shares Outstanding")
     net_debt = debt - cash
