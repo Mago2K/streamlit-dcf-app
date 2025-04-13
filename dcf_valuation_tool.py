@@ -3,6 +3,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+def extract_value(df, label):
+    row = df[df.iloc[:, 0].str.contains(label, na=False, case=False)].iloc[0]
+    values = pd.to_numeric(row[1:], errors='coerce')
+    return values.dropna().iloc[0] if not values.dropna().empty else None
+
 def load_financial_data(file_path):
     df = pd.read_excel(file_path, sheet_name="Sheet1")
     df.iloc[:, 0] = df.iloc[:, 0].astype(str).str.strip()
