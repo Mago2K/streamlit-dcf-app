@@ -87,6 +87,24 @@ if uploaded_file and current_price is not None:
     st.subheader("📈 Valuation Summary")
     st.dataframe(results["summary"], use_container_width=True)
 
+    # 📂 Extracted Inputs Table
+    st.subheader("📂 Extracted Inputs from Excel File")
+    inputs_data = {
+        "Metric": ["Free Cash Flow (Base)", "Cash & ST Investments", "Long-Term Debt", "Shares Outstanding"],
+        "Value": [
+            round(results["inputs"]["Base FCF"], 2),
+            round(results["inputs"]["Base FCF"] + results["inputs"]["Net Debt"], 2),
+            round(results["inputs"]["Base FCF"] + results["inputs"]["Net Debt"] - results["inputs"]["Base FCF"], 2),
+            round(results["inputs"]["Shares"], 2)
+        ]
+    }
+    st.table(pd.DataFrame(inputs_data))
+
+    # 📄 Optional: Show raw Excel content
+    st.subheader("🧾 Raw Excel Data Preview")
+    raw_df = pd.read_excel(uploaded_file, sheet_name="Sheet1")
+    st.dataframe(raw_df, use_container_width=True)
+
     # Bar chart of share price scenarios
     st.subheader("📊 DCF Share Price by Scenario")
     fig, ax = plt.subplots()
